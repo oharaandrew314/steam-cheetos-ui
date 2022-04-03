@@ -6,11 +6,30 @@ class Achievement extends StatelessWidget {
 
   const Achievement(this.achievement, {Key? key}): super(key: key);
 
+  static const iconLocked = Icon(Icons.clear_outlined, color: Colors.red);
+  static const iconUnlocked =  Icon(Icons.check_circle_outline, color: Colors.green);
+
+  Widget _achievementImage(Uri? uri, Icon fallback) {
+    if (uri == null) return fallback;
+
+    return Image.network(
+      achievement.iconUnlocked.toString(),
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return const CircularProgressIndicator();
+      },
+      errorBuilder: (context, exception, stackTrace) {
+        return fallback;
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+
     final image = achievement.unlocked
-      ? achievement.iconUnlocked != null ? Image.network(achievement.iconUnlocked.toString()) : const Icon(Icons.check_circle)
-      : achievement.iconLocked != null ? Image.network(achievement.iconLocked.toString()) : const Icon(Icons.check_box)
+      ? _achievementImage(achievement.iconUnlocked, iconUnlocked)
+      : _achievementImage(achievement.iconLocked, iconLocked)
     ;
 
     return Row(
