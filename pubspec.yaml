@@ -13,6 +13,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   shared_preferences: ^2.0.11
+  http: ^0.13.4
+  flutter_web_auth: ^0.4.1
 
 dev_dependencies:
   flutter_test:
@@ -20,6 +22,6 @@ dev_dependencies:
   flutter_lints: ^1.0.0
 
 flutter:
-  uses-material-design: true
+#  uses-material-design: true
   assets:
-    - assets/
+    - assets/login/steam_login_2.png
