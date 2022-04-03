@@ -13,7 +13,7 @@ class Achievement extends StatelessWidget {
     if (uri == null) return fallback;
 
     return Image.network(
-      achievement.iconUnlocked.toString(),
+      uri.toString(),
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return const CircularProgressIndicator();
@@ -26,7 +26,6 @@ class Achievement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final image = achievement.unlocked
       ? _achievementImage(achievement.iconUnlocked, iconUnlocked)
       : _achievementImage(achievement.iconLocked, iconLocked)
