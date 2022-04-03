@@ -41,7 +41,7 @@ class _GamesScreenState extends State<GamesScreen> {
     final state = await AppState.getInstance();
     state.logout();
 
-    Navigator.push(context, LoginScreen.createRoute());
+    Navigator.pushReplacement(context, LoginScreen.createRoute());
   }
 
   @override
