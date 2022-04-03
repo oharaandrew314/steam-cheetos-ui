@@ -15,6 +15,13 @@ class GamesScreen extends StatefulWidget {
 
   @override
   State<GamesScreen> createState() => _GamesScreenState();
+
+  static Route createRoute(UserDto user, GamesClient client) => PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => GamesScreen(
+      user: user,
+      client: client,
+    ),
+  );
 }
 
 class _GamesScreenState extends State<GamesScreen> {
@@ -42,12 +49,12 @@ class _GamesScreenState extends State<GamesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final gamesList = _games != null
+    final content = _games != null
         ? GameList(
             games: _games!,
             handlePress: (game) => _handlePressGame(context, game)
           )
-        : null
+        : const CircularProgressIndicator()
     ;
 
     final userMenu = UserMenu(user: widget.user);
@@ -60,9 +67,7 @@ class _GamesScreenState extends State<GamesScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (gamesList != null) gamesList
-          ],
+          children: [content],
         ),
       ),
     );

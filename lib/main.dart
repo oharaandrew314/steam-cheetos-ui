@@ -12,7 +12,7 @@ void main() async {
   final token = state.getAccessToken();
 
   final home = user == null || token == null
-      ? LoginScreen()
+      ? const LoginScreen()
       : GamesScreen(client: GamesClient.create(token), user: user);
 
   runApp(MaterialApp(

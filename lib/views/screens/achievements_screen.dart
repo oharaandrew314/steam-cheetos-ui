@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
 import 'package:steamcheetos_flutter/views/widgets/achievement.dart';
-import 'package:steamcheetos_flutter/views/widgets/game.dart';
 import 'package:steamcheetos_flutter/views/widgets/user.dart';
 
 class AchievementsScreen extends StatefulWidget {
@@ -44,7 +43,10 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final achievementsList = _achievements != null ? AchievementList(_achievements!) : null;
+    final content = _achievements != null
+        ? AchievementList(_achievements!)
+        : const CircularProgressIndicator()
+    ;
     final userMenu = UserMenu(user: widget.user);
 
     return Scaffold(
@@ -55,9 +57,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (achievementsList != null) achievementsList
-          ],
+          children: [content],
         ),
       ),
     );
