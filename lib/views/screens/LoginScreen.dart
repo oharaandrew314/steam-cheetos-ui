@@ -1,52 +1,93 @@
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:steamcheetos_flutter/client/cheetos_client.dart';
+import 'package:steamcheetos_flutter/AppState.dart';
+import 'package:steamcheetos_flutter/client/auth_client.dart';
+import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:steamcheetos_flutter/client/dtos.dart';
+import 'package:logger/logger.dart';
+import 'package:steamcheetos_flutter/views/screens/GamesScreen.dart';
+import 'package:steamcheetos_flutter/views/widgets/userProfile.dart';
 
 class LoginScreen extends StatefulWidget {
 
-  final CheetosClient client;
-
-  const LoginScreen({required this.client, Key? key}) : super(key: key);
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
+
+  static Route createRoute() => PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen()
+  );
 }
 
 class _LoginScreenState extends State<LoginScreen> {
   UserDto? _user;
+  final log = Logger();
+  final _authClient = AuthClient.getDefault();
 
-  void _doLogin() async {
-    final redirectUri = kIsWeb ? Uri.base.resolve("auth.html") : Uri.parse("steamcheetos://auth");
-    print('redirect uri: $redirectUri');
+  @override
+  void initState() {
+    super.initState();
 
-    final loginUri = await widget.client.getLoginUri(redirectUri);
-    print('login uri: $loginUri');
-    final result = await FlutterWebAuth.authenticate(url: loginUri.toString(), callbackUrlScheme: redirectUri.scheme);
-    final token = Uri.parse(result).queryParameters["token"]!;
-    print('token: $token');
+    _loadUser();
+  }
 
-    final user = await widget.client.getUser(token);
-    print(user);
-
+  void _loadUser() async {
+    final state = await AppState.getInstance();
     setState(() {
-      _user = user;
+      _user = state.getUser();
     });
   }
 
+  void _doLogin(BuildContext context) async {
+    final redirectUri = kIsWeb ? Uri.base.resolve("auth.html") : Uri.parse("steamcheetos://auth");
+    log.d('redirect uri: $redirectUri');
+
+    final loginUri = await _authClient.getLoginUri(redirectUri);
+    log.d('login uri: $loginUri');
+    final result = await FlutterWebAuth.authenticate(url: loginUri.toString(), callbackUrlScheme: redirectUri.scheme);
+    final token = Uri.parse(result).queryParameters["token"]!;
+    log.d('token: $token');
+
+    final user = await GamesClient.create(token).getUser();
+    log.i('User $user');
+
+    final state = await AppState.getInstance();
+    state.login(user, token);
+    
+    Navigator.push(context, _createGamesScreenRoute(user, GamesClient.create(token)));
+
+    // setState(() {
+    //   _user = user;
+    // });
+  }
+
   void _doLogout() async {
+    final state = await AppState.getInstance();
+    state.logout();
+
     setState(() {
       _user = null;
     });
   }
+
+  Route _createGamesScreenRoute(UserDto user, GamesClient client) => PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => GamesScreen(
+        user: user,
+        client: client,
+    ),
+    // transitionsBuilder: (context, animation, secondaryAnimation, child) {
+    //   return child;
+    // }
+  );
 
   @override
   Widget build(BuildContext context) {
     final widget = _user == null
       ? TextButton(
           child: Image.asset('assets/login/steam_login_2.png'),
-          onPressed: _doLogin
+          onPressed: () => _doLogin(context)
       )
       : Column(
         children: [
@@ -57,7 +98,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SteamCheetos')
+        title: const Text('Steam Cheetos'),
+        actions: [
+          if (_user != null) UserMenu(user: _user!, doLogout: _doLogout)
+        ],
       ),
       body: Center(
         child: Column(
@@ -71,23 +115,3 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-class UserProfile extends StatelessWidget {
-  final UserDto user;
-
-  const UserProfile({required this.user, Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (user.avatar != null) Image(
-            image: NetworkImage(user.avatar!.toString()),
-            color: null,
-            width: 48,
-            height: 48
-        ),
-        Text(user.name)
-      ],
-    );
-  }
-}

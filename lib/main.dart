@@ -1,31 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:steamcheetos_flutter/client/cheetos_client.dart';
+import 'package:steamcheetos_flutter/AppState.dart';
+import 'package:steamcheetos_flutter/client/games_client.dart';
+import 'package:steamcheetos_flutter/views/screens/GamesScreen.dart';
 import 'package:steamcheetos_flutter/views/screens/LoginScreen.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
-void main() {
-  final host = Uri.parse("http://${kIsWeb ? "localhost" : "10.0.2.2"}:8000");
-  print("Cheetos Host: $host");
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(MyApp(host: host));
-}
+  final state = await AppState.getInstance();
+  final user = state.getUser();
+  final token = state.getAccessToken();
 
-class MyApp extends StatelessWidget {
-  final Uri host;
+  final home = user == null || token == null
+      ? const LoginScreen()
+      : GamesScreen(client: GamesClient.create(token), user: user);
 
-  const MyApp({required this.host, Key? key}) : super(key: key);
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    final client = CheetosClient(host);
-
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: LoginScreen(client: client),
-    );
-  }
+  runApp(MaterialApp(
+    title: 'Steam Cheetos',
+    theme: ThemeData(
+      primarySwatch: Colors.grey,
+    ),
+    home: home,
+  ));
 }
