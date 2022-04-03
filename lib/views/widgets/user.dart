@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:steamcheetos_flutter/AppState.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
+import 'package:steamcheetos_flutter/views/screens/login_screen.dart';
 
 class UserProfile extends StatelessWidget {
   final UserDto user;
@@ -42,9 +44,15 @@ class UserAvatar extends StatelessWidget {
 
 class UserMenu extends StatelessWidget {
   final UserDto user;
-  final VoidCallback? doLogout;
 
-  const UserMenu({required this.user, required this.doLogout, Key? key}): super(key: key);
+  const UserMenu({required this.user, Key? key}): super(key: key);
+
+  void _doLogout(BuildContext context) async {
+    final state = await AppState.getInstance();
+    state.logout();
+
+    Navigator.pushReplacement(context, LoginScreen.createRoute());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +66,7 @@ class UserMenu extends StatelessWidget {
           PopupMenuItem(
             child: const Text("Logout"),
             value: 2,
-            onTap: doLogout
+            onTap: () => _doLogout(context)
           )
         ]
     );

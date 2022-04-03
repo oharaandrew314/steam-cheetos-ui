@@ -41,6 +41,36 @@ class GamesClient {
         .toList();
   }
 
+  Future<List<AchievementDtoV1>> listAchievements(String gameId) async {
+    final resp = await http.get(
+        host.resolve("/v1/games/$gameId/achievements"),
+        headers: { 'Authorization': 'Bearer $accessToken'}
+    );
+
+    if (resp.statusCode != 200) throw HttpException("${resp.statusCode}: ${resp.body}");
+
+    return (jsonDecode(resp.body) as List)
+        .map((i) => _parseAchievement(i))
+        .toList();
+  }
+
+  AchievementDtoV1 _parseAchievement(Map<String, dynamic> json) {
+    final iconLocked = json['iconLocked'] as String?;
+    final iconUnlocked = json['iconUnlocked'] as String?;
+    final unlockedOn = json['unlockedOn'] as String?;
+
+    return AchievementDtoV1(
+        id: json['id'],
+        name: json['name'],
+        description: json['description'],
+        hidden: json['hidden'],
+        iconLocked: iconLocked == null ? null : Uri.parse(iconLocked),
+        iconUnlocked: iconUnlocked == null ? null : Uri.parse(iconUnlocked),
+        unlockedOn: unlockedOn == null ? null : DateTime.parse(unlockedOn),
+        unlocked: json['unlocked']
+    );
+  }
+
   GameDto _parseGame(Map<String, dynamic> json) {
     final displayImage = json['displayImage'];
     final lastUpdated = json['lastUpdated'];

@@ -31,3 +31,25 @@ class GameDto {
   @override
   String toString() => 'Game [$id] $name ($achievementsCurrent of $achievementsTotal)';
 }
+
+class AchievementDtoV1 {
+  final String id;
+  final String name;
+  final String? description;
+  final bool hidden;
+  final Uri? iconLocked;
+  final Uri? iconUnlocked;
+  final DateTime? unlockedOn;
+  final bool unlocked;
+
+  const AchievementDtoV1({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.hidden,
+    required this.iconLocked,
+    required this.iconUnlocked,
+    required this.unlockedOn,
+    required this.unlocked
+  });
+}

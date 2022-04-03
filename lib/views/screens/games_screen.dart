@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:steamcheetos_flutter/AppState.dart';
+import 'package:logger/logger.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
-import 'package:logger/logger.dart';
-import 'package:steamcheetos_flutter/views/screens/LoginScreen.dart';
-import 'package:steamcheetos_flutter/views/widgets/Game.dart';
-import 'package:steamcheetos_flutter/views/widgets/userProfile.dart';
+import 'package:steamcheetos_flutter/views/screens/achievements_screen.dart';
+import 'package:steamcheetos_flutter/views/widgets/game.dart';
+import 'package:steamcheetos_flutter/views/widgets/user.dart';
 
 class GamesScreen extends StatefulWidget {
 
@@ -19,9 +18,8 @@ class GamesScreen extends StatefulWidget {
 }
 
 class _GamesScreenState extends State<GamesScreen> {
-  final log = Logger();
-
   List<GameDto>? _games;
+  final log = Logger();
 
   @override
   void initState() {
@@ -37,21 +35,26 @@ class _GamesScreenState extends State<GamesScreen> {
     });
   }
 
-  void _doLogout(BuildContext context) async {
-    final state = await AppState.getInstance();
-    state.logout();
-
-    Navigator.pushReplacement(context, LoginScreen.createRoute());
+  void _handlePressGame(BuildContext context, GameDto game) {
+    log.d("Go to achievements for $game");
+    Navigator.push(context, AchievementsScreen.createRoute(widget.client, widget.user, game));
   }
 
   @override
   Widget build(BuildContext context) {
-    final gamesList = _games != null ? GameList(games: _games!) : null;
-    final userMenu = UserMenu(user: widget.user, doLogout: () => _doLogout(context));
+    final gamesList = _games != null
+        ? GameList(
+            games: _games!,
+            handlePress: (game) => _handlePressGame(context, game)
+          )
+        : null
+    ;
+
+    final userMenu = UserMenu(user: widget.user);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Steam Cheetos'),
+        title: const Text("Games"),
         actions: [userMenu],
       ),
       body: Center(

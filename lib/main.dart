@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:steamcheetos_flutter/AppState.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
-import 'package:steamcheetos_flutter/views/screens/GamesScreen.dart';
-import 'package:steamcheetos_flutter/views/screens/LoginScreen.dart';
+import 'package:steamcheetos_flutter/views/screens/games_screen.dart';
+import 'package:steamcheetos_flutter/views/screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +12,7 @@ void main() async {
   final token = state.getAccessToken();
 
   final home = user == null || token == null
-      ? const LoginScreen()
+      ? LoginScreen()
       : GamesScreen(client: GamesClient.create(token), user: user);
 
   runApp(MaterialApp(
