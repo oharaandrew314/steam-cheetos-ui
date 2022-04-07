@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
 
@@ -74,53 +73,5 @@ class GameSummary2 extends StatelessWidget {
           onPressed: handlePress,
           child: content
         );
-  }
-}
-
-class GameList extends StatefulWidget {
-  final List<GameDto> games;
-  final Function(GameDto)? handlePress;
-
-  const GameList({required this.games, this.handlePress, Key? key}) : super(key: key);
-
-  @override
-  State<GameList> createState() => _GameListState();
-}
-
-class _GameListState extends State<GameList> {
-  final List<GameDto> sorted = [];
-  final log = Logger();
-
-  @override
-  void initState() {
-    super.initState();
-
-    sorted.addAll(widget.games);
-    sorted.sort((game1, game2) => game2.getCompletion().compareTo(game1.getCompletion()));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-        child: ListView.builder(
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            // padding: const EdgeInsets.all(5),
-            itemCount: sorted.length,
-            itemBuilder: (BuildContext context, int index) {
-              final game = sorted[index];
-
-              return SizedBox(
-                  height: 100,
-                  child: GameSummary2(
-                      game: game,
-                      handlePress: widget.handlePress == null
-                          ? null
-                          : () => widget.handlePress!.call(game)
-                  )
-              );
-            }
-        )
-    );
   }
 }

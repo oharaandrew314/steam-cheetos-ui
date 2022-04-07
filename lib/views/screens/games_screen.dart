@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
 import 'package:steamcheetos_flutter/views/screens/achievements_screen.dart';
-import 'package:steamcheetos_flutter/views/widgets/game.dart';
+import 'package:steamcheetos_flutter/views/widgets/game_list.dart';
+import 'package:steamcheetos_flutter/views/widgets/search_bar.dart';
 import 'package:steamcheetos_flutter/views/widgets/user.dart';
 
 class GamesScreen extends StatefulWidget {
@@ -26,13 +26,19 @@ class GamesScreen extends StatefulWidget {
 
 class _GamesScreenState extends State<GamesScreen> {
   List<GameDto>? _games;
-  final log = Logger();
+  final searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
 
     _loadGames();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    searchController.dispose();
   }
 
   void _loadGames() async {
@@ -43,7 +49,6 @@ class _GamesScreenState extends State<GamesScreen> {
   }
 
   void _handlePressGame(BuildContext context, GameDto game) {
-    log.d("Go to achievements for $game");
     Navigator.push(context, AchievementsScreen.createRoute(widget.client, widget.user, game));
   }
 
@@ -52,17 +57,20 @@ class _GamesScreenState extends State<GamesScreen> {
     final content = _games != null
         ? GameList(
             games: _games!,
-            handlePress: (game) => _handlePressGame(context, game)
+            handlePress: (game) => _handlePressGame(context, game),
+            searchController: searchController,
           )
         : const CircularProgressIndicator()
     ;
 
     final userMenu = UserMenu(user: widget.user);
 
+    final searchBar = SearchBar(placeholder: 'Games', controller: searchController);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Games"),
-        actions: [userMenu],
+        title: searchBar,
+        actions: [userMenu]
       ),
       body: Center(
         child: Column(

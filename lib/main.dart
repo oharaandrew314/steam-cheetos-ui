@@ -17,9 +17,9 @@ void main() async {
 
   runApp(MaterialApp(
     title: 'Steam Cheetos',
-    theme: ThemeData(
-      primarySwatch: Colors.grey,
-    ),
+    // theme: ThemeData(
+    //   primarySwatch: Colors.primaries,
+    // ),
     home: home,
   ));
 }

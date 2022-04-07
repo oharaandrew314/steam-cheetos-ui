@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
-import 'package:steamcheetos_flutter/views/widgets/achievement.dart';
+import 'package:steamcheetos_flutter/views/widgets/achievement_list.dart';
+import 'package:steamcheetos_flutter/views/widgets/search_bar.dart';
 import 'package:steamcheetos_flutter/views/widgets/user.dart';
 
 class AchievementsScreen extends StatefulWidget {
@@ -26,12 +27,18 @@ class AchievementsScreen extends StatefulWidget {
 
 class _AchievementsScreenState extends State<AchievementsScreen> {
   List<AchievementDtoV1>? _achievements;
+  final searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-
     _loadAchievements();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    searchController.dispose();
   }
 
   void _loadAchievements() async {
@@ -44,14 +51,14 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   @override
   Widget build(BuildContext context) {
     final content = _achievements != null
-        ? AchievementList(_achievements!)
+        ? AchievementList(achievements: _achievements!, searchController: searchController)
         : const CircularProgressIndicator()
     ;
     final userMenu = UserMenu(user: widget.user);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.game.name),
+        title: SearchBar(placeholder: widget.game.name, controller: searchController),
         actions: [userMenu],
       ),
       body: Center(
