@@ -43,6 +43,7 @@ class _AchievementListState extends State<AchievementList> {
 
   void _clear() {
     setState(() {
+      sorted.clear();
       sorted.addAll(widget.achievements);
       // sorted.sort((a1, a2) => game2.getCompletion().compareTo(game1.getCompletion()));
     });
