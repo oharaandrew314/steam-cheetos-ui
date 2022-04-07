@@ -59,10 +59,11 @@ class _AchievementListState extends State<AchievementList> {
             itemCount: sorted.length,
             itemBuilder: (BuildContext context, int index) {
               final achievement = sorted[index];
-              return LimitedBox(
-                  maxHeight: 100,
-                  child: Achievement(achievement)
-              );
+              return Achievement(achievement);
+              // return LimitedBox(
+              //     maxHeight: 100,
+              //     child: Achievement(achievement)
+              // );
             }
         )
     );

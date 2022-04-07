@@ -33,8 +33,32 @@ class Achievement extends StatelessWidget {
 
     return Row(
       children: [
-        image,
-        Text(achievement.name)
+        Expanded(
+          child: LimitedBox(
+            maxHeight: 75,
+            child: image
+          ),
+        ),
+        Expanded(
+          flex: 5,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  achievement.name,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  achievement.description ?? "Secret Achievement",
+                  overflow: TextOverflow.clip,
+                )
+              ],
+            )
+          )
+        )
       ],
     );
   }
