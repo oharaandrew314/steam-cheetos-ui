@@ -4,10 +4,11 @@ import 'package:steamcheetos_flutter/client/dtos.dart';
 import 'package:steamcheetos_flutter/views/widgets/achievement.dart';
 
 class AchievementList extends StatefulWidget {
+  final GameDto game;
   final List<AchievementDtoV1> achievements;
   final TextEditingController searchController;
 
-  const AchievementList({required this.achievements, required this.searchController, Key? key}) : super(key: key);
+  const AchievementList({required this.game, required this.achievements, required this.searchController, Key? key}) : super(key: key);
 
   @override
   State<AchievementList> createState() => _AchievementListState();
@@ -59,7 +60,7 @@ class _AchievementListState extends State<AchievementList> {
             itemCount: sorted.length,
             itemBuilder: (BuildContext context, int index) {
               final achievement = sorted[index];
-              return Achievement(achievement);
+              return Achievement(widget.game, achievement);
               // return LimitedBox(
               //     maxHeight: 100,
               //     child: Achievement(achievement)

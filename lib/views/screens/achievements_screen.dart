@@ -51,7 +51,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   @override
   Widget build(BuildContext context) {
     final content = _achievements != null
-        ? AchievementList(achievements: _achievements!, searchController: searchController)
+        ? AchievementList(game: widget.game, achievements: _achievements!, searchController: searchController)
         : const CircularProgressIndicator()
     ;
     final userMenu = UserMenu(user: widget.user);
