@@ -57,7 +57,7 @@ class _GameListState extends State<GameList> {
     final listView = ListView.builder(
         scrollDirection: Axis.vertical,
         shrinkWrap: true,
-        itemCount: sorted.length,
+        itemCount: sorted.length,  // TODO add limit with warning at bottom
         itemBuilder: (BuildContext context, int index) {
           final game = sorted[index];
           final handlePress = widget.handlePress == null ? null : () => widget.handlePress!.call(game);

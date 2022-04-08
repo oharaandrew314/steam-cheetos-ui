@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_web_frame/flutter_web_frame.dart';
 import 'package:steamcheetos_flutter/AppState.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:steamcheetos_flutter/views/screens/games_screen.dart';
@@ -15,11 +17,22 @@ void main() async {
       ? const LoginScreen()
       : GamesScreen(client: GamesClient.create(token), user: user);
 
-  runApp(MaterialApp(
-    title: 'Steam Cheetos',
-    // theme: ThemeData(
-    //   primarySwatch: Colors.primaries,
-    // ),
-    home: home,
-  ));
+  final app = FlutterWebFrame(
+      builder: (context) {
+        return MaterialApp(
+            title: 'Steam Cheetos',
+            // theme: ThemeData(
+            //   primarySwatch: Colors.primaries,
+            // ),
+            home: LimitedBox(
+              maxWidth: 512,
+              child: home,
+            )
+        );
+      },
+      maximumSize: const Size(768, 0),
+      enabled: kIsWeb,
+  );
+
+  runApp(app);
 }

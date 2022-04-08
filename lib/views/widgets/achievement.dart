@@ -34,7 +34,7 @@ class _AchievementState extends State<Achievement> {
         return const CircularProgressIndicator();
       },
       errorBuilder: (context, exception, stackTrace) {
-        return fallback;
+        return Container();
       },
     );
   }
