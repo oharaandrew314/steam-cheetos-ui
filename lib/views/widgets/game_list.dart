@@ -54,26 +54,21 @@ class _GameListState extends State<GameList> {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-        child: ListView.builder(
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            // padding: const EdgeInsets.all(5),
-            itemCount: sorted.length,
-            itemBuilder: (BuildContext context, int index) {
-              final game = sorted[index];
+    final listView = ListView.builder(
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        itemCount: sorted.length,
+        itemBuilder: (BuildContext context, int index) {
+          final game = sorted[index];
+          final handlePress = widget.handlePress == null ? null : () => widget.handlePress!.call(game);
+          return GameSummary(
+            game: game,
+            handlePress: handlePress
+          );
+        });
 
-              return SizedBox(
-                  height: 100,
-                  child: GameSummary2(
-                      game: game,
-                      handlePress: widget.handlePress == null
-                          ? null
-                          : () => widget.handlePress!.call(game)
-                  )
-              );
-            }
-        )
+    return Expanded(
+        child: listView
     );
   }
 }

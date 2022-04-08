@@ -31,35 +31,60 @@ class Achievement extends StatelessWidget {
       : _achievementImage(achievement.iconLocked, iconLocked)
     ;
 
-    return Row(
+    final description = Container(
+        padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              achievement.name,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 5),
+            Text(
+              achievement.description ?? "This is a secret achievement", // TODO italicize
+              overflow: TextOverflow.clip,
+            )
+          ],
+        )
+    );
+
+    final lockedIcon = Icon(
+      achievement.unlocked ? Icons.check : Icons.clear_outlined,
+      color: achievement.unlocked ? Colors.green : Colors.red,
+    );
+
+    const hiddenIcon = Icon(
+      Icons.remove_red_eye,
+      color: Colors.grey
+    );
+
+    final icons = Column(
+      children: [
+        lockedIcon,
+        // if (achievement.hidden) hiddenIcon
+      ],
+    );
+
+    final row = Row(
       children: [
         Expanded(
+          flex: 2,
           child: LimitedBox(
             maxHeight: 75,
             child: image
           ),
         ),
         Expanded(
-          flex: 5,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  achievement.name,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  achievement.description ?? "Secret Achievement",
-                  overflow: TextOverflow.clip,
-                )
-              ],
-            )
-          )
-        )
+          flex: 10,
+          child: description
+        ),
+        Expanded(
+            child: icons
+        ),
       ],
     );
+
+    return Card(child: row);
   }
 }

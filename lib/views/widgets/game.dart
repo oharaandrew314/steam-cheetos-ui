@@ -4,43 +4,9 @@ import 'package:steamcheetos_flutter/client/dtos.dart';
 
 class GameSummary extends StatelessWidget {
   final GameDto game;
-
-  const GameSummary({required this.game, Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final image = game.displayImage == null ? null
-      : Image.network(game.displayImage.toString());
-
-    final top = Row(
-      children: [
-        if (image != null) image,
-        Text(game.name)
-      ],
-    );
-
-    final bottom = Row(
-      children: [
-        LinearProgressIndicator(
-            value: game.achievementsCurrent.toDouble() / game.achievementsTotal
-        ),
-        if (game.achievementsCurrent == game.achievementsTotal) const Icon(Icons.star)
-      ],
-    );
-
-    return top;
-
-    // return Column(
-    //     children: [top, bottom]
-    // );
-  }
-}
-
-class GameSummary2 extends StatelessWidget {
-  final GameDto game;
   final VoidCallback? handlePress;
 
-  const GameSummary2({required this.game, this.handlePress, Key? key}) : super(key: key);
+  const GameSummary({required this.game, this.handlePress, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -50,28 +16,29 @@ class GameSummary2 extends StatelessWidget {
 
     final completion = game.isCompleted()
         ? const Icon(
-            Icons.star,
+            Icons.check_circle,
             size: 80,
-            color: Colors.yellow,
+            color: Colors.green,
           )
         : CircularPercentIndicator(
-            radius: 30.0,
-            // lineWidth: 5.0,
+            radius: 35.0,
             percent: game.getCompletion(),
             center: Text("${game.achievementsCurrent} / ${game.achievementsTotal}"),
-            // progressColor: Colors.green,
           );
 
     final content = Row(
-        children: [preview, completion],
-        crossAxisAlignment: CrossAxisAlignment.center
+        children: [
+          Expanded(child: preview, flex: 3),
+          Expanded(child: completion)
+        ],
     );
 
-    return handlePress == null
-      ? content
-      : ElevatedButton(
-          onPressed: handlePress,
-          child: content
-        );
+    return TextButton(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+      ),
+      onPressed: handlePress,
+      child: Card(child: content)
+    );
   }
 }
