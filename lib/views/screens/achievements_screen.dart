@@ -75,26 +75,74 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     }
   };
 
-  @override
-  Widget build(BuildContext context) {
-    List<AchievementDtoV1>? achievements = _achievements;
-    if (achievements != null) {
-      achievements = achievements.where(_achievementFilter()).toList();
-      if (_searchTerm.isNotEmpty) {
-        achievements = extractAllSorted<AchievementDtoV1>(
-            query: _searchTerm,
-            choices: achievements,
-            getter: (achievement) => achievement.name,
-            cutoff: 85
-        ).map((e) => e.choice).toList();
-      }
-      if (_pageIndex == unlockedPage) {
-        achievements.sort(compareAchievementUnlockedOn());
-      }
+  Widget _buildList(List<AchievementDtoV1> achievements) {
+    achievements = achievements.where(_achievementFilter()).toList();
+    if (_searchTerm.isNotEmpty) {
+      achievements = extractAllSorted<AchievementDtoV1>(
+          query: _searchTerm,
+          choices: achievements,
+          getter: (achievement) => achievement.name,
+          cutoff: 85
+      ).map((e) => e.choice).toList();
+    }
+    if (_pageIndex == unlockedPage) {
+      achievements.sort(compareAchievementUnlockedOn());
     }
 
-    final content = achievements != null
-        ? AchievementList(game: widget.game, achievements: achievements)
+    if (achievements.isEmpty) {
+      return _buildEmptyList();
+    }
+
+    return AchievementList(game: widget.game, achievements: achievements);
+  }
+
+  Widget _buildEmptyList() {
+    if (_searchTerm.isNotEmpty) {
+      return Column(
+        children: const [
+          Icon(
+            Icons.question_mark,
+            color: Colors.orange,
+            size: 128
+          ),
+          Text("No achievements found")
+        ],
+      );
+    }
+
+    switch(_pageIndex) {
+      case unlockedPage: {
+        return Column(
+          children: const [
+            Icon(
+              Icons.clear,
+              color: Colors.red,
+              size: 128,
+            ),
+            Text("You haven't unlocked anything :(")
+          ]
+        );
+      }
+      case lockedPage: {
+        return Column(
+          children: const [
+            Icon(
+              Icons.check_circle,
+              color: Colors.green,
+              size: 128,
+            ),
+            Text("You've unlocked everything!")
+          ],
+        );
+      }
+      default: return const Text("You shouldn't be here!");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final content = _achievements != null
+        ? _buildList(_achievements!)
         : const CircularProgressIndicator()
     ;
     final userMenu = UserMenu(user: widget.user);
