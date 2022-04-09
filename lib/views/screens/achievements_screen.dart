@@ -75,7 +75,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     }
   };
 
-  Widget _buildList(List<AchievementDtoV1> achievements) {
+  Widget _buildList(BuildContext context, List<AchievementDtoV1> achievements) {
     achievements = achievements.where(_achievementFilter()).toList();
     if (_searchTerm.isNotEmpty) {
       achievements = extractAllSorted<AchievementDtoV1>(
@@ -90,22 +90,25 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     }
 
     if (achievements.isEmpty) {
-      return _buildEmptyList();
+      return _buildEmptyList(context);
     }
 
     return AchievementList(game: widget.game, achievements: achievements);
   }
 
-  Widget _buildEmptyList() {
+  Widget _buildEmptyList(BuildContext context) {
     if (_searchTerm.isNotEmpty) {
       return Column(
-        children: const [
-          Icon(
+        children: [
+          const Icon(
             Icons.question_mark,
             color: Colors.orange,
             size: 128
           ),
-          Text("No achievements found")
+          Text(
+              "No achievements found",
+              style: Theme.of(context).textTheme.titleMedium,
+          )
         ],
       );
     }
@@ -113,25 +116,31 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     switch(_pageIndex) {
       case unlockedPage: {
         return Column(
-          children: const [
-            Icon(
+          children: [
+            const Icon(
               Icons.clear,
               color: Colors.red,
               size: 128,
             ),
-            Text("You haven't unlocked anything :(")
+            Text(
+                "You haven't unlocked anything :(",
+              style: Theme.of(context).textTheme.titleMedium,
+            )
           ]
         );
       }
       case lockedPage: {
         return Column(
-          children: const [
-            Icon(
+          children: [
+            const Icon(
               Icons.check_circle,
               color: Colors.green,
               size: 128,
             ),
-            Text("You've unlocked everything!")
+            Text(
+                "You've unlocked everything!",
+                style: Theme.of(context).textTheme.titleMedium,
+            )
           ],
         );
       }
@@ -142,7 +151,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   @override
   Widget build(BuildContext context) {
     final content = _achievements != null
-        ? _buildList(_achievements!)
+        ? _buildList(context, _achievements!)
         : const CircularProgressIndicator()
     ;
     final userMenu = UserMenu(user: widget.user);

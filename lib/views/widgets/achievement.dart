@@ -44,6 +44,12 @@ class _AchievementState extends State<Achievement> {
     color: widget.achievement.unlocked ? Colors.green : Colors.red,
   );
 
+  final _hiddenText = const Text(
+    "This is a secret achievement",
+    overflow: TextOverflow.clip,
+    style: TextStyle(fontStyle: FontStyle.italic),
+  );
+
   Widget _mainDescription() => Container(
       padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
       child: Column(
@@ -54,10 +60,12 @@ class _AchievementState extends State<Achievement> {
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: 5),
-          Text(
-            widget.achievement.description ?? "This is a secret achievement", // TODO italicize
-            overflow: TextOverflow.clip,
-          )
+          widget.achievement.description != null
+            ? Text(
+              widget.achievement.description!,
+              overflow: TextOverflow.clip,
+            )
+            : _hiddenText
         ],
       )
   );
