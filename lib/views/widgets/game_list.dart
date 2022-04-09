@@ -48,7 +48,7 @@ class _GameListState extends State<GameList> {
     setState(() {
       sorted.clear();
       sorted.addAll(widget.games);
-      sorted.sort((game1, game2) => game2.getCompletion().compareTo(game1.getCompletion()));
+      sorted.sort(compareGameCompletionDesc());
     });
   }
 
