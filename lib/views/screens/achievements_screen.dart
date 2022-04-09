@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
-import 'package:steamcheetos_flutter/views/widgets/achievement_list.dart';
+import 'package:steamcheetos_flutter/views/widgets/achievement.dart';
 import 'package:steamcheetos_flutter/views/widgets/search_bar.dart';
 import 'package:steamcheetos_flutter/views/widgets/user.dart';
 
@@ -32,15 +32,13 @@ class AchievementsScreen extends StatefulWidget {
 class _AchievementsScreenState extends State<AchievementsScreen> {
   final _searchController = TextEditingController();
 
-  List<AchievementDtoV1>? _achievements;
+  List<AchievementDtoV1> _achievements = [];
   int _pageIndex = 0;
   String _searchTerm = "";
 
   @override
   void initState() {
     super.initState();
-    _loadAchievements();
-
     _searchController.addListener(() {
       setState(() {
         _searchTerm = _searchController.text;
@@ -54,7 +52,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     _searchController.dispose();
   }
 
-  void _loadAchievements() async {
+  Future _loadAchievements() async {
     final achievements = await widget.client.listAchievements(widget.game.id);
     setState(() {
       _achievements = achievements;
@@ -90,13 +88,24 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     }
 
     if (achievements.isEmpty) {
-      return _buildEmptyList(context);
+      return ListView(
+        children: [_buildPlaceholder(context)],
+      );
     }
 
-    return AchievementList(game: widget.game, achievements: achievements);
+    return ListView.builder(
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        // padding: const EdgeInsets.all(5),
+        itemCount: achievements.length,
+        itemBuilder: (BuildContext context, int index) {
+          final achievement = achievements[index];
+          return Achievement(widget.game, achievement);
+        }
+    );
   }
 
-  Widget _buildEmptyList(BuildContext context) {
+  Widget _buildPlaceholder(BuildContext context) {
     if (_searchTerm.isNotEmpty) {
       return Column(
         children: [
@@ -148,39 +157,35 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     }
   }
 
+  Widget _bottomNavigation() => BottomNavigationBar(
+    items: const [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.lock),
+        label: 'Locked',
+      ),
+      BottomNavigationBarItem(
+          icon: Icon(Icons.lock_open),
+          label: 'Unlocked'
+      ),
+    ],
+    currentIndex: _pageIndex,
+    onTap: _onNavbarTap,
+  );
+
   @override
   Widget build(BuildContext context) {
-    final content = _achievements != null
-        ? _buildList(context, _achievements!)
-        : const CircularProgressIndicator()
-    ;
-    final userMenu = UserMenu(user: widget.user);
-
     return Scaffold(
       appBar: AppBar(
         title: SearchBar(placeholder: widget.game.name, controller: _searchController),
-        actions: [userMenu],
+        actions: [UserMenu(user: widget.user)],
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [content],
-        ),
+        child: RefreshIndicator(
+          child: _buildList(context, _achievements),
+          onRefresh: _loadAchievements
+        )
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.lock),
-              label: 'Locked',
-          ),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.lock_open),
-            label: 'Unlocked'
-          ),
-        ],
-        currentIndex: _pageIndex,
-        onTap: _onNavbarTap,
-      ),
+      bottomNavigationBar: _bottomNavigation()
     );
   }
 }
