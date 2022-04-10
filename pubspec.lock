@@ -50,6 +50,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.4"
+  declarative_refresh_indicator:
+    dependency: "direct main"
+    description:
+      name: declarative_refresh_indicator
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   fake_async:
     dependency: transitive
     description:

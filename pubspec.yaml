@@ -20,6 +20,7 @@ dependencies:
   fuzzywuzzy: ^0.1.7
   url_launcher: ^6.0.20
   flutter_web_frame: ^0.0.2
+  declarative_refresh_indicator: ^0.1.0
 
 dev_dependencies:
   flutter_test:

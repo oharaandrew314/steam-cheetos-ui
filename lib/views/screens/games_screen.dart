@@ -1,8 +1,10 @@
+import 'package:declarative_refresh_indicator/declarative_refresh_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
 import 'package:steamcheetos_flutter/views/screens/achievements_screen.dart';
-import 'package:steamcheetos_flutter/views/widgets/game_list.dart';
+import 'package:steamcheetos_flutter/views/widgets/game.dart';
 import 'package:steamcheetos_flutter/views/widgets/search_bar.dart';
 import 'package:steamcheetos_flutter/views/widgets/user.dart';
 
@@ -25,26 +27,38 @@ class GamesScreen extends StatefulWidget {
 }
 
 class _GamesScreenState extends State<GamesScreen> {
-  List<GameDto>? _games;
-  final searchController = TextEditingController();
+  final _searchController = TextEditingController();
+
+  List<GameDto> _games = [];
+  String _searchTerm = "";
+  bool _loading = false;
 
   @override
   void initState() {
     super.initState();
-
+    _searchController.addListener(() {
+      setState(() {
+        _searchTerm = _searchController.text;
+      });
+    });
     _loadGames();
   }
 
   @override
   void dispose() {
     super.dispose();
-    searchController.dispose();
+    _searchController.dispose();
   }
 
-  void _loadGames() async {
+  Future _loadGames() async {
+    setState(() {
+      _loading = true;
+    });
+
     final games = await widget.client.listGames();
     setState(() {
       _games = games;
+      _loading = false;
     });
   }
 
@@ -52,30 +66,71 @@ class _GamesScreenState extends State<GamesScreen> {
     Navigator.push(context, AchievementsScreen.createRoute(widget.client, widget.user, game));
   }
 
+  Widget _buildGameList(BuildContext context) {
+    var results = _games.toList();
+
+    if (_searchTerm.isNotEmpty) {
+      results = extractAllSorted<GameDto>(
+          query:  _searchTerm,
+          choices: _games,
+          getter: (game) => game.name,
+          cutoff: 85
+      ).map((e) => e.choice).toList();
+    }
+
+    if (results.isEmpty) {
+      return ListView(
+        children: [_buildPlaceholder()],
+      );
+    }
+
+    results.sort(compareGameCompletionDesc());
+
+    return ListView.builder(
+        scrollDirection: Axis.vertical,
+        itemCount: results.length,  // TODO add limit with warning at bottom
+        itemBuilder: (BuildContext context, int index) {
+          final game = results[index];
+          return GameSummary(
+              game: game,
+              handlePress: () => _handlePressGame(context, game)
+          );
+        });
+  }
+
+  Widget _buildPlaceholder() {
+    if (_loading) return Container();
+
+    return Column(
+      children: [
+        const Icon(
+          Icons.question_mark,
+          color: Colors.orange,
+          size: 128,
+        ),
+        Text(
+          "No games Found",
+          style: Theme
+              .of(context)
+              .textTheme
+              .titleMedium,
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final content = _games != null
-        ? GameList(
-            games: _games!,
-            handlePress: (game) => _handlePressGame(context, game),
-            searchController: searchController,
-          )
-        : const CircularProgressIndicator()
-    ;
-
-    final userMenu = UserMenu(user: widget.user);
-
-    final searchBar = SearchBar(placeholder: 'Games', controller: searchController);
-
     return Scaffold(
       appBar: AppBar(
-        title: searchBar,
-        actions: [userMenu]
+          title: SearchBar(placeholder: 'Games', controller: _searchController),
+          actions: [UserMenu(user: widget.user)]
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [content],
+        child: DeclarativeRefreshIndicator(
+            refreshing: _loading,
+            child: _buildGameList(context),
+            onRefresh: _loadGames
         ),
       ),
     );

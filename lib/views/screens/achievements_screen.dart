@@ -1,3 +1,4 @@
+import 'package:declarative_refresh_indicator/declarative_refresh_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
@@ -35,6 +36,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   List<AchievementDtoV1> _achievements = [];
   int _pageIndex = 0;
   String _searchTerm = "";
+  bool _loading = false;
 
   @override
   void initState() {
@@ -44,6 +46,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         _searchTerm = _searchController.text;
       });
     });
+    _loadAchievements();
   }
 
   @override
@@ -53,9 +56,13 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   }
 
   Future _loadAchievements() async {
+    setState(() {
+      _loading = true;
+    });
     final achievements = await widget.client.listAchievements(widget.game.id);
     setState(() {
       _achievements = achievements;
+      _loading = false;
     });
   }
 
@@ -65,7 +72,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     });
   }
 
-  bool Function(AchievementDtoV1) _achievementFilter() => (a) {
+  bool Function(AchievementDtoV1) _pageFilter() => (a) {
     switch(_pageIndex) {
       case lockedPage: return !a.unlocked;
       case unlockedPage: return a.unlocked;
@@ -73,21 +80,25 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     }
   };
 
-  Widget _buildList(BuildContext context, List<AchievementDtoV1> achievements) {
-    achievements = achievements.where(_achievementFilter()).toList();
+  Widget _buildList(BuildContext context) {
+    var results = _achievements
+        .where(_pageFilter())
+        .toList();
+
     if (_searchTerm.isNotEmpty) {
-      achievements = extractAllSorted<AchievementDtoV1>(
+      results = extractAllSorted<AchievementDtoV1>(
           query: _searchTerm,
-          choices: achievements,
+          choices: results,
           getter: (achievement) => achievement.name,
           cutoff: 85
       ).map((e) => e.choice).toList();
     }
+
     if (_pageIndex == unlockedPage) {
-      achievements.sort(compareAchievementUnlockedOn());
+      results.sort(compareAchievementUnlockedOn());
     }
 
-    if (achievements.isEmpty) {
+    if (results.isEmpty) {
       return ListView(
         children: [_buildPlaceholder(context)],
       );
@@ -95,17 +106,17 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
     return ListView.builder(
         scrollDirection: Axis.vertical,
-        shrinkWrap: true,
-        // padding: const EdgeInsets.all(5),
-        itemCount: achievements.length,
+        itemCount: results.length,
         itemBuilder: (BuildContext context, int index) {
-          final achievement = achievements[index];
+          final achievement = results[index];
           return Achievement(widget.game, achievement);
         }
     );
   }
 
   Widget _buildPlaceholder(BuildContext context) {
+    if (_loading) return Container();
+
     if (_searchTerm.isNotEmpty) {
       return Column(
         children: [
@@ -132,7 +143,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               size: 128,
             ),
             Text(
-                "You haven't unlocked anything :(",
+              "You haven't unlocked anything :(",
               style: Theme.of(context).textTheme.titleMedium,
             )
           ]
@@ -180,8 +191,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         actions: [UserMenu(user: widget.user)],
       ),
       body: Center(
-        child: RefreshIndicator(
-          child: _buildList(context, _achievements),
+        child: DeclarativeRefreshIndicator(
+          refreshing: _loading,
+          child: _buildList(context),
           onRefresh: _loadAchievements
         )
       ),
