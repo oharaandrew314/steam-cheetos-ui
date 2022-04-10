@@ -8,6 +8,9 @@ import 'package:steamcheetos_flutter/views/widgets/game.dart';
 import 'package:steamcheetos_flutter/views/widgets/search_bar.dart';
 import 'package:steamcheetos_flutter/views/widgets/user.dart';
 
+const incompletePage = 0;
+const finishedPage = 1;
+
 class GamesScreen extends StatefulWidget {
 
   final GamesClient client;
@@ -32,6 +35,7 @@ class _GamesScreenState extends State<GamesScreen> {
   List<GameDto> _games = [];
   String _searchTerm = "";
   bool _loading = false;
+  int _pageIndex = 0;
 
   @override
   void initState() {
@@ -66,8 +70,24 @@ class _GamesScreenState extends State<GamesScreen> {
     Navigator.push(context, AchievementsScreen.createRoute(widget.client, widget.user, game));
   }
 
+  void _onNavbarTap(int index) {
+    setState(() {
+      _pageIndex = index;
+    });
+  }
+
+  bool Function(GameDto) _pageFilter() => (a) {
+    switch(_pageIndex) {
+      case incompletePage: return !a.isCompleted();
+      case finishedPage: return a.isCompleted();
+      default: return false;
+    }
+  };
+
   Widget _buildGameList(BuildContext context) {
-    var results = _games.toList();
+    var results = _games
+        .where(_pageFilter())
+        .toList();
 
     if (_searchTerm.isNotEmpty) {
       results = extractAllSorted<GameDto>(
@@ -119,6 +139,21 @@ class _GamesScreenState extends State<GamesScreen> {
     );
   }
 
+  Widget _bottomNavigation() => BottomNavigationBar(
+    items: const [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.clear),
+        label: 'In Progress',
+      ),
+      BottomNavigationBarItem(
+          icon: Icon(Icons.check_circle),
+          label: 'Finished'
+      ),
+    ],
+    currentIndex: _pageIndex,
+    onTap: _onNavbarTap,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,6 +168,7 @@ class _GamesScreenState extends State<GamesScreen> {
             onRefresh: _loadGames
         ),
       ),
+      bottomNavigationBar: _bottomNavigation(),
     );
   }
 }

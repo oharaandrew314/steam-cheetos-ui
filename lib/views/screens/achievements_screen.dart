@@ -171,12 +171,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   Widget _bottomNavigation() => BottomNavigationBar(
     items: const [
       BottomNavigationBarItem(
-        icon: Icon(Icons.lock),
-        label: 'Locked',
+        icon: Icon(Icons.clear),
+        label: 'Missing',
       ),
       BottomNavigationBarItem(
-          icon: Icon(Icons.lock_open),
-          label: 'Unlocked'
+          icon: Icon(Icons.check),
+          label: 'Done'
       ),
     ],
     currentIndex: _pageIndex,
