@@ -40,8 +40,8 @@ class _AchievementSearchScreenState extends State<AchievementSearchScreen> {
     final results = extractAllSorted<AchievementDtoV1>(
         query: _searchTerm,
         choices: widget.achievements,
-        getter: (a) => a.name,
-        cutoff: 85
+        getter: (a) => '${a.name} ${a.description}',
+        cutoff: 60
     ).map((e) => e.choice).toList();
 
     return Scaffold(
