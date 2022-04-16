@@ -79,13 +79,17 @@ class _GamesScreenState extends State<GamesScreen> {
               icon: const Icon(Icons.search),
               onPressed: () => _handlePressSearch(context)
             ),
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () => _loadGames(hard: true),
+            ),
             UserMenu(user: widget.user)
           ],
         bottom: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.clear)),
               Tab(icon: Icon(Icons.check)),
-              Tab(icon: Icon(Icons.sync))
+              Tab(icon: Icon(Icons.download))
             ]
         )
       ),

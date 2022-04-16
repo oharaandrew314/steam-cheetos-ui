@@ -70,6 +70,10 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               icon: const Icon(Icons.search),
               onPressed: () => _handlePressSearch(context)
           ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => _loadAchievements(hard: true),
+          ),
           UserMenu(user: widget.user)
         ],
         bottom: const TabBar(

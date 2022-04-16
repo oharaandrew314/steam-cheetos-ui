@@ -25,7 +25,7 @@ class GameSummary extends StatelessWidget {
             center: Text("${game.achievementsCurrent} / ${game.achievementsTotal}"),
           )
       : const Icon(
-          Icons.sync,
+          Icons.download,
           size: 80,
           color: Colors.orange,
         )
