@@ -12,7 +12,8 @@ class GameSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final preview = Image.network(game.displayImage.toString());
 
-    final completion = game.isCompleted()
+    final icon = game.hasLoadedAchievements()
+      ? game.isCompleted()
         ? const Icon(
             Icons.check_circle,
             size: 80,
@@ -22,12 +23,18 @@ class GameSummary extends StatelessWidget {
             radius: 35.0,
             percent: game.getCompletion(),
             center: Text("${game.achievementsCurrent} / ${game.achievementsTotal}"),
-          );
+          )
+      : const Icon(
+          Icons.question_mark,
+          size: 80,
+          color: Colors.orange,
+        )
+      ;
 
     final content = Row(
         children: [
           Expanded(child: preview, flex: 3),
-          Expanded(child: completion)
+          Expanded(child: icon)
         ],
     );
 

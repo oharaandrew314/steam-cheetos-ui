@@ -26,8 +26,19 @@ class GameDto {
   });
 
   double getCompletion() => achievementsTotal == null || achievementsCurrent == null ? 0 : achievementsCurrent!.toDouble() / achievementsTotal!;
-  bool isCompleted() => achievementsCurrent == achievementsTotal;
+  bool isCompleted() => achievementsTotal != null && achievementsCurrent == achievementsTotal;
   bool isAchievementsExpired() => achievementsExpire.isBefore(DateTime.now());
+  bool hasLoadedAchievements() => achievementsTotal != null;
+  bool shouldLoadAchievements() {
+    if (!hasLoadedAchievements()) return true;
+    return achievementsExpire.isAfter(DateTime.now());
+  }
+  bool hasAchievements() {
+    return achievementsTotal != null && achievementsTotal! > 0;
+  }
+  bool hasNoAchievements() {
+    return achievementsTotal == 0;
+  }
 
   @override
   String toString() => 'Game [$id] $name ($achievementsCurrent of $achievementsTotal)';

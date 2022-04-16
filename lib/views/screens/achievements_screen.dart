@@ -33,7 +33,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadAchievements();
+    _loadAchievements(hard: widget.game.shouldLoadAchievements());
   }
 
   Future _loadAchievements({bool hard = false}) async {
@@ -57,8 +57,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     Navigator.of(context).push(route);
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildAchievementDetails(BuildContext context) {
     final unlocked = _achievements.where((a) => a.unlocked).toList();
     final locked = _achievements.where((a) => !a.unlocked).toList();
 
@@ -81,20 +80,20 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         ),
       ),
       body: Center(
-        child: TabBarView(
-          children: [
-            DeclarativeRefreshIndicator(
-                child: AchievementList(placeholder: const LockedPlaceholder(), game: widget.game, achievements: locked),
-                refreshing: _loading,
-                onRefresh: () => _loadAchievements(hard: true)
-            ),
-            DeclarativeRefreshIndicator(
-                child: AchievementList(placeholder: const UnlockedPlaceholder(), game: widget.game, achievements: unlocked),
-                refreshing: _loading,
-                onRefresh: () => _loadAchievements(hard: true)
-            )
-          ],
-        )
+          child: TabBarView(
+            children: [
+              DeclarativeRefreshIndicator(
+                  child: AchievementList(placeholder: const UnlockedPlaceholder(), game: widget.game, achievements: locked),
+                  refreshing: _loading,
+                  onRefresh: () => _loadAchievements(hard: true)
+              ),
+              DeclarativeRefreshIndicator(
+                  child: AchievementList(placeholder: const LockedPlaceholder(), game: widget.game, achievements: unlocked),
+                  refreshing: _loading,
+                  onRefresh: () => _loadAchievements(hard: true)
+              )
+            ],
+          )
       ),
     );
 
@@ -102,5 +101,29 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         length: 2,
         child: scaffold
     );
+  }
+
+  Widget _buildNoAchievements(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.game.name),
+      ),
+      body: DeclarativeRefreshIndicator(
+          child: const Center(
+            child: NoAchievementsPlaceholder(),
+          ),
+          refreshing: _loading,
+          onRefresh: () => _loadAchievements(hard: true)
+      )
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.game.hasAchievements()) {
+      return _buildNoAchievements(context);
+    }
+
+    return _buildAchievementDetails(context);
   }
 }

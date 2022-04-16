@@ -11,6 +11,12 @@ class AchievementList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (achievements.isEmpty) {
+      return Center(
+        child: placeholder,
+      );
+    }
+
     return ListView.builder(
         scrollDirection: Axis.vertical,
         itemCount: achievements.length,

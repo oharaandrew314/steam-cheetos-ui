@@ -42,7 +42,7 @@ class _GamesScreenState extends State<GamesScreen> {
 
     final games = await (hard ? widget.client.refreshGames() : widget.client.listGames());
     setState(() {
-      _games = games;
+      _games = games.where((game) => !game.hasNoAchievements()).toList();
       _loading = false;
     });
   }
