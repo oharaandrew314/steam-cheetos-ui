@@ -40,19 +40,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final widget = loading
+    final login = loading
         ? const CircularProgressIndicator()
         : LoginButton(() => _doLogin(context))
     ;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login with Steam'),
+        title: const Text('Steam Cheetos'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [widget]
+          children: [
+            Text(
+              "The Steam Achievement Tracker",
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const Padding(padding: EdgeInsets.all(50)),
+            login
+          ]
         ),
       ),
     );
