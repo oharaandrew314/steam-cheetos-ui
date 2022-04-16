@@ -59,6 +59,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
   Widget _buildAchievementDetails(BuildContext context) {
     final unlocked = _achievements.where((a) => a.unlocked).toList();
+    unlocked.sort(compareAchievementUnlockedOn());
+
     final locked = _achievements.where((a) => !a.unlocked).toList();
 
 

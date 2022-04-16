@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
 
 class GamesClient {
@@ -9,6 +10,7 @@ class GamesClient {
   final String accessToken;
 
   GamesClient(this.host, this.accessToken);
+  final log = Logger();
 
   static GamesClient create(String accessToken) => GamesClient(Uri.https("api.steamcheetos.com", ""), accessToken);
 
@@ -42,6 +44,7 @@ class GamesClient {
   }
 
   Future<List<GameDto>> refreshGames() async {
+    log.i("Refresh Games");
     final resp = await http.post(
         host.resolve("/v1/games"),
         headers: { 'Authorization': 'Bearer $accessToken'}
@@ -55,6 +58,7 @@ class GamesClient {
   }
 
   Future<List<AchievementDtoV1>> listAchievements(String gameId) async {
+    log.i("Get Achievements for game $gameId");
     final resp = await http.get(
         host.resolve("/v1/games/$gameId/achievements"),
         headers: { 'Authorization': 'Bearer $accessToken'}
@@ -68,6 +72,7 @@ class GamesClient {
   }
 
   Future<List<AchievementDtoV1>> refreshAchievements(String gameId) async {
+    log.i("Refresh Achievements for game $gameId");
     final resp = await http.post(
         host.resolve("/v1/games/$gameId/achievements"),
         headers: { 'Authorization': 'Bearer $accessToken'}
