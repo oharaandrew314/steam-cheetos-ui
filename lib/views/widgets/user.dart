@@ -61,11 +61,9 @@ class UserMenu extends StatelessWidget {
         itemBuilder: (context) => [
           PopupMenuItem(
             child: Text(user.name),
-            value: 1,
           ),
           PopupMenuItem(
             child: const Text("Logout"),
-            value: 2,
             onTap: () => _doLogout(context)
           )
         ]

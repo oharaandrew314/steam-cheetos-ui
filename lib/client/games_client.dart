@@ -18,7 +18,7 @@ class GamesClient {
         headers: { 'Authorization': 'Bearer $accessToken'}
     );
     
-    if (resp.statusCode != 200) throw HttpException(resp.toString());
+    if (resp.statusCode != 200) throw HttpException("${resp.statusCode}: ${resp.body}");
 
     final json = jsonDecode(resp.body);
     final avatar = json['avatar'];
@@ -34,7 +34,20 @@ class GamesClient {
         headers: { 'Authorization': 'Bearer $accessToken'}
     );
 
-    if (resp.statusCode != 200) throw HttpException(resp.toString());
+    if (resp.statusCode != 200) throw HttpException("${resp.statusCode}: ${resp.body}");
+
+    return (jsonDecode(resp.body) as List)
+        .map((i) => _parseGame(i))
+        .toList();
+  }
+
+  Future<List<GameDto>> refreshGames() async {
+    final resp = await http.post(
+        host.resolve("/v1/games"),
+        headers: { 'Authorization': 'Bearer $accessToken'}
+    );
+
+    if (resp.statusCode != 200) throw HttpException("${resp.statusCode}: ${resp.body}");
 
     return (jsonDecode(resp.body) as List)
         .map((i) => _parseGame(i))
@@ -54,6 +67,21 @@ class GamesClient {
         .toList();
   }
 
+  Future<List<AchievementDtoV1>> refreshAchievements(String gameId) async {
+    final resp = await http.post(
+        host.resolve("/v1/games/$gameId/achievements"),
+        headers: { 'Authorization': 'Bearer $accessToken'}
+    );
+
+    if (resp.statusCode != 200) throw HttpException("${resp.statusCode}: ${resp.body}");
+
+    return (jsonDecode(resp.body) as List)
+        .map((i) => _parseAchievement(i))
+        .toList();
+  }
+
+  // dto mapping
+
   AchievementDtoV1 _parseAchievement(Map<String, dynamic> json) {
     final iconLocked = json['iconLocked'] as String?;
     final iconUnlocked = json['iconUnlocked'] as String?;
@@ -72,16 +100,13 @@ class GamesClient {
   }
 
   GameDto _parseGame(Map<String, dynamic> json) {
-    final displayImage = json['displayImage'];
-    final lastUpdated = json['lastUpdated'];
-
     return GameDto(
       id: json['id'],
       name: json['name'],
       achievementsTotal: json['achievementsTotal'],
       achievementsCurrent: json['achievementsCurrent'],
-      displayImage: displayImage == null ? null : Uri.parse(displayImage),
-      lastUpdated: lastUpdated == null ? null : DateTime.parse(lastUpdated)
+      displayImage: Uri.parse(json['displayImage']),
+      achievementsExpire: DateTime.parse(json['achievementsExpire']),
     );
   }
 }

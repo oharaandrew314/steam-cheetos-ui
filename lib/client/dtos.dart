@@ -11,10 +11,10 @@ class UserDto {
 class GameDto {
   final String id;
   final String name;
-  final int achievementsTotal;
-  final int achievementsCurrent;
-  final Uri? displayImage;
-  final DateTime? lastUpdated;
+  final int? achievementsTotal;
+  final int? achievementsCurrent;
+  final Uri displayImage;
+  final DateTime achievementsExpire;
 
   GameDto({
     required this.id,
@@ -22,11 +22,12 @@ class GameDto {
     required this.achievementsTotal,
     required this.achievementsCurrent,
     required this.displayImage,
-    required this.lastUpdated
+    required this.achievementsExpire
   });
 
-  double getCompletion() => achievementsCurrent.toDouble() / achievementsTotal;
+  double getCompletion() => achievementsTotal == null || achievementsCurrent == null ? 0 : achievementsCurrent!.toDouble() / achievementsTotal!;
   bool isCompleted() => achievementsCurrent == achievementsTotal;
+  bool isAchievementsExpired() => achievementsExpire.isBefore(DateTime.now());
 
   @override
   String toString() => 'Game [$id] $name ($achievementsCurrent of $achievementsTotal)';
@@ -59,6 +60,10 @@ class AchievementDtoV1 {
 
 int Function(GameDto, GameDto) compareGameCompletionDesc() => (game1, game2) {
   return game2.getCompletion().compareTo(game1.getCompletion());
+};
+
+int Function(GameDto, GameDto) compareGameName() => (game1, game2) {
+  return game1.name.compareTo(game2.name);
 };
 
 int Function(AchievementDtoV1, AchievementDtoV1) compareAchievementCompleted() => (a1, a2) {

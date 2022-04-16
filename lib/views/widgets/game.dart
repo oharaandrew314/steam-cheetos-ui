@@ -10,9 +10,7 @@ class GameSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final preview = game.displayImage == null
-        ? Text(game.name)
-        : Image.network(game.displayImage.toString());
+    final preview = Image.network(game.displayImage.toString());
 
     final completion = game.isCompleted()
         ? const Icon(
