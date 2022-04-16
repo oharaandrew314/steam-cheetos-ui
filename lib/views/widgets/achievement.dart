@@ -40,7 +40,7 @@ class _AchievementState extends State<Achievement> {
   }
 
   Widget _lockedIcon() => Icon(
-    widget.achievement.unlocked ? Icons.check : Icons.clear_outlined,
+    widget.achievement.unlocked ? Icons.check : Icons.clear,
     color: widget.achievement.unlocked ? Colors.green : Colors.red,
   );
 

@@ -21,9 +21,9 @@ void main() async {
       builder: (context) {
         return MaterialApp(
             title: 'Steam Cheetos',
-            // theme: ThemeData(
-            //   primarySwatch: Colors.primaries,
-            // ),
+            theme: ThemeData(
+              primarySwatch: Colors.grey,
+            ),
             home: LimitedBox(
               maxWidth: 512,
               child: home,

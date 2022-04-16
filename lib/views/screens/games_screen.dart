@@ -87,9 +87,9 @@ class _GamesScreenState extends State<GamesScreen> {
           ],
         bottom: const TabBar(
             tabs: [
-              Tab(icon: Icon(Icons.clear)),
-              Tab(icon: Icon(Icons.check)),
-              Tab(icon: Icon(Icons.download))
+              Tab(icon: Icon(Icons.incomplete_circle)),
+              Tab(icon: Icon(Icons.check_circle)),
+              Tab(icon: Icon(Icons.pending))
             ]
         )
       ),
