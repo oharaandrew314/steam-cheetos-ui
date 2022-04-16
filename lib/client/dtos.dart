@@ -27,6 +27,7 @@ class GameDto {
 
   double getCompletion() => achievementsTotal == null || achievementsCurrent == null ? 0 : achievementsCurrent!.toDouble() / achievementsTotal!;
   bool isCompleted() => achievementsTotal != null && achievementsCurrent == achievementsTotal;
+  bool isInProgress() => achievementsTotal != null && achievementsCurrent != achievementsTotal;
   bool isAchievementsExpired() => achievementsExpire.isBefore(DateTime.now());
   bool hasLoadedAchievements() => achievementsTotal != null;
   bool shouldLoadAchievements() {

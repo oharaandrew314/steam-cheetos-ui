@@ -66,8 +66,10 @@ class _GamesScreenState extends State<GamesScreen> {
     final completed = _games.where((game) => game.isCompleted()).toList();
     completed.sort(compareGameName());
 
-    final notCompleted = _games.where((game) => !game.isCompleted()).toList();
+    final notCompleted = _games.where((game) => game.isInProgress()).toList();
     notCompleted.sort(compareGameCompletionDesc());
+
+    final unSynced = _games.where((game) => !game.hasLoadedAchievements()).toList();
 
     final scaffold =  Scaffold(
       appBar: AppBar(
@@ -82,7 +84,8 @@ class _GamesScreenState extends State<GamesScreen> {
         bottom: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.clear)),
-              Tab(icon: Icon(Icons.check))
+              Tab(icon: Icon(Icons.check)),
+              Tab(icon: Icon(Icons.sync))
             ]
         )
       ),
@@ -99,13 +102,18 @@ class _GamesScreenState extends State<GamesScreen> {
               refreshing: _loading,
               onRefresh: () => _loadGames(hard: true)
             ),
+            DeclarativeRefreshIndicator(
+                child: GameList(games: unSynced, handlePressGame: (game) => _handlePressGame(context, game)),
+                refreshing: _loading,
+                onRefresh: () => _loadGames(hard: true)
+            ),
           ]
         )
       )
     );
 
     return DefaultTabController(
-        length: 2,
+        length: 3,
         child: scaffold
     );
   }
