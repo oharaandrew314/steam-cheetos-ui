@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:steamcheetos_flutter/AppState.dart';
+import 'package:steamcheetos_flutter/app_state.dart';
 import 'package:steamcheetos_flutter/client/auth.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:logger/logger.dart';

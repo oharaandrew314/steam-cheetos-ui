@@ -1,7 +1,9 @@
 import 'package:declarative_refresh_indicator/declarative_refresh_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
+import 'package:steamcheetos_flutter/state/games.dart';
 import 'package:steamcheetos_flutter/views/screens/achievements_screen.dart';
 import 'package:steamcheetos_flutter/views/screens/game_search_screen.dart';
 import 'package:steamcheetos_flutter/views/widgets/game_list.dart';
@@ -26,7 +28,6 @@ class GamesScreen extends StatefulWidget {
 }
 
 class _GamesScreenState extends State<GamesScreen> {
-  List<GameDto> _games = [];
   bool _loading = false;
 
   @override
@@ -41,8 +42,9 @@ class _GamesScreenState extends State<GamesScreen> {
     });
 
     final games = await (hard ? widget.client.refreshGames() : widget.client.listGames());
+    Provider.of<GameState>(context, listen: false).updateAll(games);
+    
     setState(() {
-      _games = games.where((game) => !game.hasNoAchievements()).toList();
       _loading = false;
     });
   }
@@ -54,8 +56,7 @@ class _GamesScreenState extends State<GamesScreen> {
   void _handlePressSearch(BuildContext context) {
     final route = PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => GameSearchScreen(
-            handlePressGame: (game) => Navigator.pushReplacement(context, AchievementsScreen.createRoute(widget.client, widget.user, game)),
-            games: _games
+            handlePressGame: (game) => Navigator.pushReplacement(context, AchievementsScreen.createRoute(widget.client, widget.user, game))
         )
     );
     Navigator.of(context).push(route);
@@ -63,13 +64,7 @@ class _GamesScreenState extends State<GamesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final completed = _games.where((game) => game.isCompleted()).toList();
-    completed.sort(compareGameName());
-
-    final notCompleted = _games.where((game) => game.isInProgress()).toList();
-    notCompleted.sort(compareGameCompletionDesc());
-
-    final unSynced = _games.where((game) => !game.hasLoadedAchievements()).toList();
+    void handlePress(GameDto game) => _handlePressGame(context, game);
 
     final scaffold =  Scaffold(
       appBar: AppBar(
@@ -89,35 +84,43 @@ class _GamesScreenState extends State<GamesScreen> {
             tabs: [
               Tab(icon: Icon(Icons.incomplete_circle)),
               Tab(icon: Icon(Icons.check_circle)),
-              Tab(icon: Icon(Icons.pending))
+              Tab(icon: Icon(Icons.favorite)),
+              Tab(icon: Icon(Icons.pending)),
             ]
         )
       ),
       body: Center(
-        child: TabBarView(
-          children: [
-            DeclarativeRefreshIndicator(
-              child: GameList(games: notCompleted, handlePressGame: (game) => _handlePressGame(context, game)),
-              refreshing: _loading,
-              onRefresh: () => _loadGames(hard: true)
-            ),
-            DeclarativeRefreshIndicator(
-              child: GameList(games: completed, handlePressGame: (game) => _handlePressGame(context, game)),
-              refreshing: _loading,
-              onRefresh: () => _loadGames(hard: true)
-            ),
-            DeclarativeRefreshIndicator(
-                child: GameList(games: unSynced, handlePressGame: (game) => _handlePressGame(context, game)),
+        child: Consumer<GameState>(
+          builder: (context, games, child) => TabBarView(
+            children: [
+              DeclarativeRefreshIndicator(
+                child: GameList(games: games.notCompleted, handlePressGame: handlePress),
                 refreshing: _loading,
                 onRefresh: () => _loadGames(hard: true)
-            ),
-          ]
+              ),
+              DeclarativeRefreshIndicator(
+                child: GameList(games: games.completed, handlePressGame: handlePress),
+                refreshing: _loading,
+                onRefresh: () => _loadGames(hard: true)
+              ),
+              DeclarativeRefreshIndicator(
+                  child: GameList(games: games.favourites, handlePressGame: handlePress),
+                  refreshing: _loading,
+                  onRefresh: () => _loadGames(hard: true)
+              ),
+              DeclarativeRefreshIndicator(
+                  child: GameList(games: games.unSynced, handlePressGame: handlePress),
+                  refreshing: _loading,
+                  onRefresh: () => _loadGames(hard: true)
+              ),
+            ]
+          )
         )
       )
     );
 
     return DefaultTabController(
-        length: 3,
+        length: 4,
         child: scaffold
     );
   }

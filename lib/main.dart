@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_frame/flutter_web_frame.dart';
-import 'package:steamcheetos_flutter/AppState.dart';
+import 'package:provider/provider.dart';
+import 'package:steamcheetos_flutter/app_state.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
+import 'package:steamcheetos_flutter/state/games.dart';
 import 'package:steamcheetos_flutter/views/screens/games_screen.dart';
 import 'package:steamcheetos_flutter/views/screens/login_screen.dart';
 
@@ -34,5 +36,10 @@ void main() async {
       enabled: kIsWeb,
   );
 
-  runApp(app);
+  runApp(
+    ChangeNotifierProvider(
+        create: (context) => GameState(),
+        child: app,
+    )
+  );
 }

@@ -1,7 +1,11 @@
 import 'package:declarative_refresh_indicator/declarative_refresh_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
+import 'package:steamcheetos_flutter/client/dto_utils.dart';
 import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
+import 'package:steamcheetos_flutter/state/games.dart';
 import 'package:steamcheetos_flutter/views/screens/achievement_search_screen.dart';
 import 'package:steamcheetos_flutter/views/widgets/achievement_list.dart';
 import 'package:steamcheetos_flutter/views/widgets/user.dart';
@@ -27,12 +31,14 @@ class AchievementsScreen extends StatefulWidget {
 }
 
 class _AchievementsScreenState extends State<AchievementsScreen> {
+  bool _favourite = false;
   List<AchievementDtoV1> _achievements = [];
   bool _loading = false;
 
   @override
   void initState() {
     super.initState();
+    _favourite = widget.game.favourite;
     _loadAchievements(hard: widget.game.shouldLoadAchievements());
   }
 
@@ -41,6 +47,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       _loading = true;
     });
     final achievements = await (hard ? widget.client.refreshAchievements(widget.game.id) : widget.client.listAchievements(widget.game.id));
+    Provider.of<GameState>(context, listen: false).update(widget.game.withAchievementCounts(achievements));
     setState(() {
       _achievements = achievements;
       _loading = false;
@@ -57,6 +64,17 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     Navigator.of(context).push(route);
   }
 
+  void _handleFavourite(BuildContext context, GameDto game) async {
+    final updated = await widget.client.updateGame(game.id, !_favourite);
+    if (updated == null) throw Exception("game not found: ${game.id}");
+    Logger().i("$updated - ${updated.favourite}");
+
+    Provider.of<GameState>(context, listen: false).update(updated);
+    setState(() {
+      _favourite = updated.favourite;
+    });
+  }
+
   Widget _buildAchievementDetails(BuildContext context) {
     final unlocked = _achievements.where((a) => a.unlocked).toList();
     unlocked.sort(compareAchievementUnlockedOn());
@@ -71,6 +89,10 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
           IconButton(
               icon: const Icon(Icons.search),
               onPressed: () => _handlePressSearch(context)
+          ),
+          IconButton(
+            icon: Icon(_favourite ? Icons.favorite : Icons.favorite_border),
+            onPressed: () => _handleFavourite(context, widget.game),
           ),
           IconButton(
             icon: const Icon(Icons.refresh),

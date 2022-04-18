@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
+import 'package:provider/provider.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
+import 'package:steamcheetos_flutter/state/games.dart';
 import 'package:steamcheetos_flutter/views/widgets/game_list.dart';
 import 'package:steamcheetos_flutter/views/widgets/search_bar.dart';
 
 class GameSearchScreen extends StatefulWidget {
   final Function(GameDto) handlePressGame;
-  final List<GameDto> games;
 
-  const GameSearchScreen({required this.handlePressGame, required this.games, Key? key}) : super(key: key);
+  const GameSearchScreen({required this.handlePressGame, Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _GameSearchScreenState();
@@ -37,9 +38,10 @@ class _GameSearchScreenState extends State<GameSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final games = Provider.of<GameState>(context, listen: false).all;
     final results = extractAllSorted<GameDto>(
         query:  _searchTerm,
-        choices: widget.games,
+        choices: games,
         getter: (game) => game.name,
         cutoff: 85
     ).map((e) => e.choice).toList();

@@ -16,23 +16,24 @@ class AppState {
     return prefs.getString("access_token");
   }
 
-  // void setAccessToken(String token) {
-  //   prefs.setString("access_token", token);
-  // }
-
   UserDto? getUser() {
+    final id = prefs.getString("user_id");
+    if (id == null) return null;
+
     final name = prefs.getString("username");
     if (name == null) return null;
 
     final avatar = prefs.getString("avatar");
 
     return UserDto(
+        id: id,
         name: name,
         avatar: avatar == null ? null : Uri.parse(avatar)
     );
   }
 
   void login(UserDto user, String token) {
+    prefs.setString("user_id", user.id);
     prefs.setString("access_token", token);
     prefs.setString("username", user.name);
     if (user.avatar == null) {

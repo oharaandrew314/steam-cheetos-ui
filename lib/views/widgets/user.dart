@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:steamcheetos_flutter/AppState.dart';
+import 'package:steamcheetos_flutter/app_state.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
 import 'package:steamcheetos_flutter/views/screens/login_screen.dart';
 
