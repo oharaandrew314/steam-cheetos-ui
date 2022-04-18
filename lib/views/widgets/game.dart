@@ -15,9 +15,9 @@ class GameSummary extends StatelessWidget {
     final icon = game.hasLoadedAchievements()
       ? game.isCompleted()
         ? const Icon(
-            Icons.check_circle,
+            Icons.emoji_events,
             size: 80,
-            color: Colors.green,
+            color: Colors.orangeAccent,
           )
         : CircularPercentIndicator(
             radius: 35.0,
