@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:provider/provider.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
-import 'package:steamcheetos_flutter/state/games.dart';
+import 'package:steamcheetos_flutter/state/game_state.dart';
 import 'package:steamcheetos_flutter/views/widgets/game_list.dart';
 import 'package:steamcheetos_flutter/views/widgets/search_bar.dart';
 
@@ -38,14 +38,6 @@ class _GameSearchScreenState extends State<GameSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final games = Provider.of<GameState>(context, listen: false).all;
-    final results = extractAllSorted<GameDto>(
-        query:  _searchTerm,
-        choices: games,
-        getter: (game) => game.name,
-        cutoff: 85
-    ).map((e) => e.choice).toList();
-
     return Scaffold(
         appBar: AppBar(
             title: SearchBar(
@@ -55,9 +47,20 @@ class _GameSearchScreenState extends State<GameSearchScreen> {
             ),
         ),
         body: Center(
-          child: GameList(
-              games: results,
-              handlePressGame: widget.handlePressGame
+          child: Consumer<GameState>(
+            builder: (context, value, child) {
+              final games = extractAllSorted<GameDto>(
+                  query:  _searchTerm,
+                  choices: value.all,
+                  getter: (game) => game.name,
+                  cutoff: 85
+              ).map((e) => e.choice).toList();
+
+              return GameList(
+                  games: games,
+                  handlePressGame: widget.handlePressGame
+              );
+            },
           )
         )
     );

@@ -82,7 +82,7 @@ class GamesClient {
   }
 
   Future<List<UserDto>> listFriends() async {
-    final resp = await http.post(
+    final resp = await http.get(
         host.resolve("/v1/friends"),
         headers: { 'Authorization': 'Bearer $accessToken'}
     );
@@ -96,7 +96,7 @@ class GamesClient {
 
   Future<List<AchievementStatusDto>> getFriendAchievements(String gameId, String friendId) async {
       final resp = await http.get(
-          host.resolve("/v1/$gameId/friends/$friendId/achievements"),
+          host.resolve("/v1/games/$gameId/friends/$friendId/achievements"),
           headers: { 'Authorization': 'Bearer $accessToken'}
       );
 
@@ -146,8 +146,6 @@ UserDto _parseUser(Map<String, dynamic> json) {
 }
 
 AchievementDtoV1 _parseAchievement(Map<String, dynamic> json) {
-  final iconLocked = json['iconLocked'] as String?;
-  final iconUnlocked = json['iconUnlocked'] as String?;
   final unlockedOn = json['unlockedOn'] as String?;
 
   return AchievementDtoV1(
@@ -155,8 +153,8 @@ AchievementDtoV1 _parseAchievement(Map<String, dynamic> json) {
       name: json['name'],
       description: json['description'],
       hidden: json['hidden'],
-      iconLocked: iconLocked == null ? null : Uri.parse(iconLocked),
-      iconUnlocked: iconUnlocked == null ? null : Uri.parse(iconUnlocked),
+      iconLocked: Uri.parse(json['iconLocked']),
+      iconUnlocked: Uri.parse(json['iconUnlocked']),
       unlockedOn: unlockedOn == null ? null : DateTime.parse(unlockedOn),
       unlocked: json['unlocked']
   );

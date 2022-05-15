@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:fuzzywuzzy/fuzzywuzzy.dart';
+import 'package:provider/provider.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
+import 'package:steamcheetos_flutter/state/achievement_state.dart';
 import 'package:steamcheetos_flutter/views/widgets/achievement_list.dart';
 import 'package:steamcheetos_flutter/views/widgets/search_bar.dart';
 
 class AchievementSearchScreen extends StatefulWidget {
+  final UserDto user;
   final GameDto game;
-  final List<AchievementDtoV1> achievements;
 
-  const AchievementSearchScreen({required this.game, required this.achievements, Key? key}) : super(key: key);
+  const AchievementSearchScreen({ required this.user, required this.game, Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _AchievementSearchScreenState();
@@ -37,13 +38,6 @@ class _AchievementSearchScreenState extends State<AchievementSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final results = extractAllSorted<AchievementDtoV1>(
-        query: _searchTerm,
-        choices: widget.achievements,
-        getter: (a) => '${a.name} ${a.description}',
-        cutoff: 60
-    ).map((e) => e.choice).toList();
-
     return Scaffold(
         appBar: AppBar(
             title: SearchBar(
@@ -53,10 +47,12 @@ class _AchievementSearchScreenState extends State<AchievementSearchScreen> {
             ),
         ),
         body: Center(
-          child: AchievementList(
-            game: widget.game,
-            achievements: results,
-            placeholder: const NoAchievementsPlaceholder(),
+          child: Consumer<AchievementState>(
+            builder: (context, value, child) => AchievementList(
+              game: widget.game,
+              achievements: value.achievements(widget.game.id, term: _searchTerm),
+              placeholder: const NoAchievementsPlaceholder(),
+            )
           )
         )
     );

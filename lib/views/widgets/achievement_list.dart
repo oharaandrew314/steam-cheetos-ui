@@ -22,7 +22,7 @@ class AchievementList extends StatelessWidget {
         itemCount: achievements.length,
         itemBuilder: (BuildContext context, int index) {
           final achievement = achievements[index];
-          return Achievement(game, achievement);
+          return UserAchievementStatus(game, achievement);
         }
     );
   }

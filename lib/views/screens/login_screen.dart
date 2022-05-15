@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final state = await AppState.getInstance();
     state.login(user, token);
 
-    Navigator.pushReplacement(context, GamesScreen.createRoute(user, client));
+    Navigator.pushReplacement(context, GamesScreen.createRoute(user));
   }
 
   @override

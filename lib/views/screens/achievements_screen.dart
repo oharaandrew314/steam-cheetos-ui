@@ -1,124 +1,118 @@
 import 'package:declarative_refresh_indicator/declarative_refresh_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:steamcheetos_flutter/client/dto_utils.dart';
-import 'package:steamcheetos_flutter/client/games_client.dart';
 import 'package:steamcheetos_flutter/client/dtos.dart';
-import 'package:steamcheetos_flutter/state/games.dart';
+import 'package:steamcheetos_flutter/state/achievement_state.dart';
+import 'package:steamcheetos_flutter/state/friends_state.dart';
+import 'package:steamcheetos_flutter/state/game_state.dart';
 import 'package:steamcheetos_flutter/views/screens/achievement_search_screen.dart';
+import 'package:steamcheetos_flutter/views/screens/achievements_compare_screen.dart';
 import 'package:steamcheetos_flutter/views/widgets/achievement_list.dart';
 import 'package:steamcheetos_flutter/views/widgets/user.dart';
+import 'package:steamcheetos_flutter/views/widgets/user_list.dart';
 
 class AchievementsScreen extends StatefulWidget {
 
-  final GamesClient client;
   final UserDto user;
-  final GameDto game;
+  final String gameId;
 
-  const AchievementsScreen({required this.client, required this.user, required this.game, Key? key}) : super(key: key);
+  const AchievementsScreen({required this.user, required this.gameId, Key? key}) : super(key: key);
 
   @override
   State<AchievementsScreen> createState() => _AchievementsScreenState();
 
-  static Route createRoute(GamesClient client, UserDto user, GameDto game) => PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => AchievementsScreen(
-        client: client,
-        user: user,
-        game: game,
-      )
+  static Route createRoute(UserDto user, String gameId) => PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => AchievementsScreen(user: user, gameId: gameId)
   );
 }
 
 class _AchievementsScreenState extends State<AchievementsScreen> {
-  bool _favourite = false;
-  List<AchievementDtoV1> _achievements = [];
-  bool _loading = false;
 
   @override
   void initState() {
     super.initState();
-    _favourite = widget.game.favourite;
-    _loadAchievements(hard: widget.game.shouldLoadAchievements());
-  }
 
-  Future _loadAchievements({bool hard = false}) async {
-    setState(() {
-      _loading = true;
-    });
-    final achievements = await (hard ? widget.client.refreshAchievements(widget.game.id) : widget.client.listAchievements(widget.game.id));
-    Provider.of<GameState>(context, listen: false).update(widget.game.withAchievementCounts(achievements));
-    setState(() {
-      _achievements = achievements;
-      _loading = false;
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      context.read<FriendsState>().refresh();
+
+      final game = context.read<GameState>().game(widget.gameId);
+      context.read<AchievementState>().load(
+          widget.gameId,
+          hard: game?.shouldLoadAchievements() ?? true
+      );
     });
   }
 
-  void _handlePressSearch(BuildContext context) {
+  void _handlePressSearch(GameDto game) {
     final route = PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => AchievementSearchScreen(
-          game: widget.game,
-          achievements: _achievements,
-        )
+        pageBuilder: (context, animation, secondaryAnimation) => AchievementSearchScreen(user: widget.user, game: game)
     );
     Navigator.of(context).push(route);
   }
 
-  void _handleFavourite(BuildContext context, GameDto game) async {
-    final updated = await widget.client.updateGame(game.id, !_favourite);
-    if (updated == null) throw Exception("game not found: ${game.id}");
-    Logger().i("$updated - ${updated.favourite}");
-
-    Provider.of<GameState>(context, listen: false).update(updated);
-    setState(() {
-      _favourite = updated.favourite;
-    });
+  void _handleGoToFriend(BuildContext context, UserDto friend, GameDto game) {
+    final route = AchievementsCompareScreen.createRoute(friend, game);
+    Navigator.of(context).push(route);
   }
 
-  Widget _buildAchievementDetails(BuildContext context) {
-    final unlocked = _achievements.where((a) => a.unlocked).toList();
-    unlocked.sort(compareAchievementUnlockedOn());
-
-    final locked = _achievements.where((a) => !a.unlocked).toList();
-
-
+  Widget _buildAchievementDetails(GameDto game) {
     final scaffold =  Scaffold(
       appBar: AppBar(
-        title: Text(widget.game.name),
+        title: Text(game.name),
         actions: [
           IconButton(
               icon: const Icon(Icons.search),
-              onPressed: () => _handlePressSearch(context)
+              onPressed: () => _handlePressSearch(game)
           ),
           IconButton(
-            icon: Icon(_favourite ? Icons.favorite : Icons.favorite_border),
-            onPressed: () => _handleFavourite(context, widget.game),
+            icon: Icon(game.favourite ? Icons.favorite : Icons.favorite_border),
+            onPressed: () => context.read<GameState>().setFavourite(widget.gameId, !game.favourite)
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => _loadAchievements(hard: true),
+            onPressed: () => context.read<AchievementState>().load(game.id, hard: true)
           ),
           UserMenu(user: widget.user)
         ],
         bottom: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.clear)),
-              Tab(icon: Icon(Icons.check))
+              Tab(icon: Icon(Icons.check)),
+              Tab(icon: Icon(Icons.people))
             ]
         ),
       ),
       body: Center(
           child: TabBarView(
             children: [
-              DeclarativeRefreshIndicator(
-                  child: AchievementList(placeholder: const UnlockedPlaceholder(), game: widget.game, achievements: locked),
-                  refreshing: _loading,
-                  onRefresh: () => _loadAchievements(hard: true)
+              Consumer<AchievementState>(
+                builder: (context, value, child) => DeclarativeRefreshIndicator(
+                    child: AchievementList(
+                        placeholder: const UnlockedPlaceholder(),
+                        game: game,
+                        achievements: value.achievements(game.id, unlocked: false)
+                    ),
+                    refreshing: value.isLoading(game.id),
+                    onRefresh: () => value.load(game.id, hard: true)
+                ),
               ),
-              DeclarativeRefreshIndicator(
-                  child: AchievementList(placeholder: const LockedPlaceholder(), game: widget.game, achievements: unlocked),
-                  refreshing: _loading,
-                  onRefresh: () => _loadAchievements(hard: true)
+              Consumer<AchievementState>(
+                builder: (context, value, child) => DeclarativeRefreshIndicator(
+                    child: AchievementList(
+                        placeholder: const LockedPlaceholder(),
+                        game: game,
+                        achievements: value.achievements(game.id, unlocked: true)
+                    ),
+                    refreshing: value.isLoading(game.id),
+                    onRefresh: () => value.load(game.id, hard: true)
+                ),
+              ),
+              Consumer<FriendsState>(
+                builder: (context, value, child) => DeclarativeRefreshIndicator(
+                    child: UserList(users: value.friends, handlePressed: (user) => _handleGoToFriend(context, user, game)),
+                    refreshing: value.loading,
+                    onRefresh: () => value.refresh()
+                )
               )
             ],
           )
@@ -126,32 +120,43 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     );
 
     return DefaultTabController(
-        length: 2,
+        length: 3,
         child: scaffold
     );
   }
 
-  Widget _buildNoAchievements(BuildContext context) {
+  Widget _buildNoAchievements(GameDto game) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.game.name),
+        title: Text(game.name),
       ),
-      body: DeclarativeRefreshIndicator(
-          child: const Center(
-            child: NoAchievementsPlaceholder(),
-          ),
-          refreshing: _loading,
-          onRefresh: () => _loadAchievements(hard: true)
+      body:  Consumer<FriendsState>(
+          builder: (context, value, child) => DeclarativeRefreshIndicator(
+              child:const Center(
+                child: NoAchievementsPlaceholder(),
+              ),
+              refreshing: value.loading,
+              onRefresh: () => value.refresh()
+          )
       )
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.game.hasAchievements()) {
-      return _buildNoAchievements(context);
-    }
+    return Consumer<GameState>(
+        builder: (context, value, child) {
+          final game = value.game(widget.gameId);
+          if (game == null) {
+            value.refresh();
+            return Container();
+          }
+          if (!game.hasAchievements()) {
+            return _buildNoAchievements(game);
+          }
 
-    return _buildAchievementDetails(context);
+          return _buildAchievementDetails(game);
+        },
+    );
   }
 }

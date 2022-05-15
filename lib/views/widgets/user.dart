@@ -42,6 +42,57 @@ class UserAvatar extends StatelessWidget {
   }
 }
 
+class SquareUserAvatar extends StatelessWidget {
+  final UserDto user;
+
+  const SquareUserAvatar({required this.user, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final avatar = user.avatar == null
+      ? Text(user.name)
+      : Image(image: NetworkImage(user.avatar.toString()))
+    ;
+
+    return LimitedBox(
+      maxHeight: 100,
+      child: avatar,
+    );
+  }
+}
+
+class UserTile extends StatelessWidget {
+  final UserDto user;
+  final Function(UserDto) handlePressed;
+
+  const UserTile({required this.user, required this.handlePressed, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final content = Row(
+      children: [
+        Expanded(child: SquareUserAvatar(user: user), flex: 1),
+        Expanded(
+            child: Text(
+                user.name,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium
+            ),
+            flex: 4
+        )
+      ],
+    );
+
+    return TextButton(
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+        ),
+        onPressed: () => handlePressed(user),
+        child: Card(child: content)
+    );
+  }
+}
+
 class UserMenu extends StatelessWidget {
   final UserDto user;
 

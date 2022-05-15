@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_web_frame/flutter_web_frame.dart';
 import 'package:provider/provider.dart';
 import 'package:steamcheetos_flutter/app_state.dart';
-import 'package:steamcheetos_flutter/client/games_client.dart';
-import 'package:steamcheetos_flutter/state/games.dart';
+import 'package:steamcheetos_flutter/state/achievement_state.dart';
+import 'package:steamcheetos_flutter/state/friends_state.dart';
+import 'package:steamcheetos_flutter/state/game_state.dart';
 import 'package:steamcheetos_flutter/views/screens/games_screen.dart';
 import 'package:steamcheetos_flutter/views/screens/login_screen.dart';
 
@@ -13,11 +14,10 @@ void main() async {
 
   final state = await AppState.getInstance();
   final user = state.getUser();
-  final token = state.getAccessToken();
 
-  final home = user == null || token == null
+  final home = user == null
       ? const LoginScreen()
-      : GamesScreen(client: GamesClient.create(token), user: user);
+      : GamesScreen(user: user);
 
   final app = FlutterWebFrame(
       builder: (context) {
@@ -37,8 +37,12 @@ void main() async {
   );
 
   runApp(
-    ChangeNotifierProvider(
-        create: (context) => GameState(),
+    MultiProvider(
+        providers: [
+          ChangeNotifierProvider<GameState>(create: (_) => GameState()),
+          ChangeNotifierProvider<FriendsState>(create: (_) => FriendsState()),
+          ChangeNotifierProvider<AchievementState>(create: (_) => AchievementState()),
+        ],
         child: app,
     )
   );

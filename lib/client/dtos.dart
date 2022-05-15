@@ -62,8 +62,8 @@ class AchievementDtoV1 {
   final String name;
   final String? description;
   final bool hidden;
-  final Uri? iconLocked;
-  final Uri? iconUnlocked;
+  final Uri iconLocked;
+  final Uri iconUnlocked;
   final DateTime? unlockedOn;
   final bool unlocked;
 
@@ -80,6 +80,12 @@ class AchievementDtoV1 {
 
   @override
   String toString() => '($id) $unlocked';
+
+  AchievementStatusDto toStatus() => AchievementStatusDto(
+      id: id,
+      unlocked: unlocked,
+      unlockedOn: unlockedOn
+  );
 }
 
 class AchievementStatusDto {
